@@ -6,7 +6,8 @@ const URL = 'http://localhost/shoppinglist/';
 
 function App() {
   const [items, setItems] = useState([]);
-  const [item, setItem] = useState('');
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState(0);
   
   
   useEffect(() => {
@@ -21,32 +22,50 @@ function App() {
   
   function save(e) {
     e.preventDefault();
-    const json = JSON.stringify({description:item});
+    const json = JSON.stringify({description:description, amount:amount });
     axios.post(URL + 'add.php',json, {
       headers: {
         'Content-Type' : 'application/json'
       }
     })
     .then ((response) => {
-      setItems(item => [...item,response.data]);
-      setItem('');
+      setItems(items => [...items,response.data]);
+      setDescription('');
+      setAmount(0);
     }).catch(error => {
       alert(error.response ? error.response.data.error : error);
     })
+  }
+
+  function remove(id) {
+    const json = JSON.stringify({id:id})
+    axios.post(URL + 'delete.php',json,{
+      headers: {
+        'Content-Type' : 'application/json'
+      }
+    })
+    .then((response) => {
+      const newListWithoutRemoved = items.filter((items) => items.id !== id);
+      setItems(newListWithoutRemoved);
+    }).catch (error => {
+      alert(error.response ? error.response.data.error : error);
+    });
   }
 
   return (
     <div>
       <form onSubmit={save}>
         <h1>Shopping list</h1>
-        <input placeholder='Type description' onChange={e => setItem(e.target.value)} />
-        <input type={'number'} placeholder='Type amount' onChange={e => setItem(e.target.value)}/>
+        <input value={description} placeholder='Type description' onChange={e => setDescription(e.target.value)} />
+        <input value={amount} type={'number'} placeholder='Type amount' onChange={e => setAmount(e.target.value)}/>
         <button>Add</button>
       </form>
       <ol>
-        {items?.map(item =>(
-          <li key={item.id}>{item.description} {item.amount}</li>
+        {items.map(items =>(
+          <li key={items.id}>{items.description} {items.amount} &nbsp;
+          <a href='#' className='delete' onClick={() => remove(items.id)}> Delete</a> </li> 
         ))}
+        
       </ol>
     </div>
   );
