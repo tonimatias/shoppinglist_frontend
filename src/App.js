@@ -7,22 +7,21 @@ const URL = 'http://localhost/shoppinglist/';
 function App() {
   const [items, setItems] = useState([]);
   const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState('');
   
   
   useEffect(() => {
     axios.get(URL)
-    .then((response) => {
-      //console.log(response.data)
-      setItems(response.data);
-    }).catch(error => {
-      alert(error);
-    });
-  },[])
+      .then((response) => {
+        setItems(response.data);
+      }).catch(error => {
+        alert(error);
+      });
+  }, [items]) // joutuu päivittämään sivun jos ei ole items tuossa..
   
   function save(e) {
     e.preventDefault();
-    const json = JSON.stringify({description:description, amount:amount });
+    const json = JSON.stringify({description:description, amount:amount});
     axios.post(URL + 'add.php',json, {
       headers: {
         'Content-Type' : 'application/json'
@@ -31,7 +30,7 @@ function App() {
     .then ((response) => {
       setItems(items => [...items,response.data]);
       setDescription('');
-      setAmount(0);
+      setAmount('');
     }).catch(error => {
       alert(error.response ? error.response.data.error : error);
     })
@@ -57,16 +56,17 @@ function App() {
       <form onSubmit={save}>
         <h1>Shopping list</h1>
         <input value={description} placeholder='Type description' onChange={e => setDescription(e.target.value)} />
-        <input value={amount} type={'number'} placeholder='Type amount' onChange={e => setAmount(e.target.value)}/>
+        <input value={amount} type={'number'} placeholder='Type amount' onChange={e => setAmount(e.target.value)} />
         <button>Add</button>
       </form>
-      <ol>
-        {items.map(items =>(
-          <li key={items.id}>{items.description} {items.amount} &nbsp;
-          <a href='#' className='delete' onClick={() => remove(items.id)}> Delete</a> </li> 
+      <ul>
+        {items?.map(items => ( // kysymysmerkki items?.map kohdalle ehkä
+          <li key={items.id}>
+            {items.description} {items.amount} &nbsp;
+            <a href='#' className='delete' onClick={() => remove(items.id)}> Delete</a>
+          </li>
         ))}
-        
-      </ol>
+      </ul>
     </div>
   );
 }
